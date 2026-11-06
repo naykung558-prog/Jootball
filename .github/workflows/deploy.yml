@@ -1,0 +1,92 @@
+name: Deploy to VPS (Production / Staging)
+
+on:
+  push:
+    branches:
+      - developer
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set deploy path
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "DEPLOY_PATH=${{ secrets.VPS_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_PATH=${{ secrets.STAGING_VPS_PATH }}" >> $GITHUB_ENV
+            echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+          fi
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy with rsync
+        run: |
+          rsync -avz --delete \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.env' \
+            --exclude '.htaccess' \
+            --exclude 'public/.htaccess' \
+            --exclude 'public/uploads' \
+            --exclude 'public/css' \
+            --exclude 'public/js' \
+            --exclude '.env.*' \
+            --exclude 'vendor' \
+            --exclude 'writable/logs/*' \
+            --exclude 'writable/cache/*' \
+            --exclude 'writable/session/*' \
+            --exclude 'writable/uploads/*' \
+            --exclude 'writable/debugbar/*' \
+            --exclude 'writable/secure_uploads' \
+            --exclude '.claude' \
+            --exclude 'CLAUDE.md' \
+            --exclude 'tests' \
+            --exclude 'phpunit.xml.dist' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ env.DEPLOY_PATH }}
+
+      - name: Post-deployment tasks
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            cd ${{ env.DEPLOY_PATH }}
+
+            # Set proper permissions
+            chmod -R 755 writable
+            chmod -R 777 writable/cache writable/logs writable/session
+
+            # Clear CodeIgniter cache
+            php spark cache:clear 2>/dev/null || true
+
+            echo "Deployment to ${{ env.DEPLOY_ENV }} completed at $(date)"
+          EOF
+
+      - name: Deployment Success
+        if: success()
+        run: echo "Deployment to ${{ env.DEPLOY_ENV }} successful!"
+
+      - name: Deployment Failed
+        if: failure()
+        run: echo "Deployment to ${{ env.DEPLOY_ENV }} failed. Please check the logs."

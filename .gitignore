@@ -1,0 +1,134 @@
+#--------------------------------------------------------------------
+# OS Generated Files
+#--------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+#--------------------------------------------------------------------
+# IDE / Editor
+#--------------------------------------------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+#--------------------------------------------------------------------
+# Environment & Credentials
+#--------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+#--------------------------------------------------------------------
+# Dependencies
+#--------------------------------------------------------------------
+/vendor/
+
+#--------------------------------------------------------------------
+# CodeIgniter 4 - Writable Directory
+#--------------------------------------------------------------------
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/uploads/*
+writable/secure_uploads/*
+writable/debugbar/*
+writable/maps_quota/*
+writable/*.html
+writable/*.txt
+writable/*.json
+writable/*.csv
+writable/*.xml
+
+# Keep directory structure
+!writable/cache/.gitkeep
+!writable/logs/.gitkeep
+!writable/session/.gitkeep
+!writable/uploads/.gitkeep
+!writable/debugbar/.gitkeep
+!writable/cache/index.html
+!writable/logs/index.html
+!writable/session/index.html
+
+#--------------------------------------------------------------------
+# CodeIgniter 4 - Config (sensitive data)
+#--------------------------------------------------------------------
+# Uncomment below if your config files contain credentials
+# app/Config/App.php
+# app/Config/Database.php
+
+#--------------------------------------------------------------------
+# Build / Compiled
+#--------------------------------------------------------------------
+/build/
+/node_modules/
+*.min.js
+*.min.css
+
+#--------------------------------------------------------------------
+# Testing
+#--------------------------------------------------------------------
+/coverage/
+.phpunit.result.cache
+phpunit.xml
+
+#--------------------------------------------------------------------
+# Composer
+#--------------------------------------------------------------------
+composer.lock
+
+#--------------------------------------------------------------------
+# Claude Code
+#--------------------------------------------------------------------
+/.claude/
+CLAUDE.md
+#--------------------------------------------------------------------
+# Project Specific
+#--------------------------------------------------------------------
+# SQL setup files (if contains sensitive data)
+# manual_setup_permissions.sql
+# setup_permissions.sql
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Logs
+*.log
+
+#--------------------------------------------------------------------
+# Apache / Server Config (uncomment if needed)
+#--------------------------------------------------------------------
+/.htaccess
+/public/.htaccess
+uploads/analytics/videos/match_0_half1_1773649422.mov
+/docs/*
+uploads/training_sessions/2026/04/0e8b244bb8a7d63982bbb562f71807c9.jpg
+
+.playwright-mcp/
+
+/public/uploads/coaches/*
+/public/uploads/coaches
+/public/uploads/id_cards
+
+# parity harness local credentials (never commit)
+tools/parity/config.local.json
+tools/parity/reports/
+/tools
+/tests
+/tests
+LocalValetDriver.php
+writable/cache/index.html
+
+# Match videos (large user-generated media)
+uploads/analytics/videos/*.mp4

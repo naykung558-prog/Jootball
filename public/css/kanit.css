@@ -1,0 +1,214 @@
+/*
+ * Font Family: Kanit (Thai)
+ * Kanit - Modern Thai font with excellent readability
+ */
+
+/* System Font Stack with Fallbacks */
+:root {
+    --font-thai: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    --font-english: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-default: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+/* Thin Weight (100) */
+.kanit-thin {
+    font-family: var(--font-default);
+    font-weight: 100;
+    font-style: normal;
+}
+
+.kanit-thin-italic {
+    font-family: var(--font-default);
+    font-weight: 100;
+    font-style: italic;
+}
+
+/* Extra Light Weight (200) */
+.kanit-extralight {
+    font-family: var(--font-default);
+    font-weight: 200;
+    font-style: normal;
+}
+
+.kanit-extralight-italic {
+    font-family: var(--font-default);
+    font-weight: 200;
+    font-style: italic;
+}
+
+/* Light Weight (300) */
+.kanit-light {
+    font-family: var(--font-default);
+    font-weight: 300;
+    font-style: normal;
+}
+
+.kanit-light-italic {
+    font-family: var(--font-default);
+    font-weight: 300;
+    font-style: italic;
+}
+
+/* Regular Weight (400) - Default */
+.kanit-regular {
+    font-family: var(--font-default);
+    font-weight: 400;
+    font-style: normal;
+}
+
+.kanit-regular-italic {
+    font-family: var(--font-default);
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Medium Weight (500) */
+.kanit-medium {
+    font-family: var(--font-default);
+    font-weight: 500;
+    font-style: normal;
+}
+
+.kanit-medium-italic {
+    font-family: var(--font-default);
+    font-weight: 500;
+    font-style: italic;
+}
+
+/* Semibold Weight (600) */
+.kanit-semibold {
+    font-family: var(--font-default);
+    font-weight: 600;
+    font-style: normal;
+}
+
+.kanit-semibold-italic {
+    font-family: var(--font-default);
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* Bold Weight (700) */
+.kanit-bold {
+    font-family: var(--font-default);
+    font-weight: 700;
+    font-style: normal;
+}
+
+.kanit-bold-italic {
+    font-family: var(--font-default);
+    font-weight: 700;
+    font-style: italic;
+}
+
+/* Extra Bold Weight (800) */
+.kanit-extrabold {
+    font-family: var(--font-default);
+    font-weight: 800;
+    font-style: normal;
+}
+
+.kanit-extrabold-italic {
+    font-family: var(--font-default);
+    font-weight: 800;
+    font-style: italic;
+}
+
+/* Black Weight (900) - using 800 as fallback */
+.kanit-black {
+    font-family: var(--font-default);
+    font-weight: 800;
+    font-style: normal;
+}
+
+.kanit-black-italic {
+    font-family: var(--font-default);
+    font-weight: 800;
+    font-style: italic;
+}
+
+/* Typography Improvements */
+body {
+    font-family: var(--font-default);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-default);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+h5 {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+h6 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Paragraphs and Text */
+p {
+    font-family: var(--font-default);
+    font-weight: 400;
+    margin-bottom: 1rem;
+}
+
+small {
+    font-size: 0.875rem;
+}
+
+/* Links */
+a {
+    font-family: var(--font-default);
+    font-weight: 500;
+}
+
+/* Buttons */
+button, .btn {
+    font-family: var(--font-default);
+    font-weight: 500;
+}
+
+/* Form Elements */
+input, textarea, select {
+    font-family: var(--font-default);
+    font-weight: 400;
+}
+
+/* Code and Pre */
+code, pre {
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", "Courier New", monospace;
+}
+
+/* Labels and Legends */
+label, legend {
+    font-family: var(--font-default);
+    font-weight: 500;
+}

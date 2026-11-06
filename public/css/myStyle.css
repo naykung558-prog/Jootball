@@ -1,0 +1,197 @@
+.remark-form-control {
+    font-size: 10px;
+    color: #a3a3a3;
+}
+
+.active-nav {
+    color: #16478d;
+    border-bottom: 3px solid;
+}
+
+.img-square {
+    object-fit: cover;
+    object-position: center center;
+    width: 150px;
+    height: 150px;
+}
+
+
+.preview {
+    overflow: hidden;
+    width: 350px !important;
+    height: 350px !important;
+    margin: 10px;
+    border: 1px solid red;
+}
+
+.preview_signature {
+    overflow: hidden;
+    width: 280px !important;
+    height: 180px !important;
+    margin: 10px;
+    border: 1px solid red;
+}
+
+/* .cropped-container {
+    width: 400px;
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+    background-color: ghostwhite;
+    padding: 20px 20px;
+    display: none;
+    margin-top: 10px;
+} */
+
+.cropper-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f3f3f3;
+    /* สีพื้นหลัง */
+    width: 350px;
+    height: 350px;
+    margin: auto;
+}
+
+.cropper-container-sig {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f3f3f3;
+    /* สีพื้นหลัง */
+    width: 280px;
+    height: 180px;
+    margin: auto;
+}
+
+.preview-container {
+    width: 350px;
+    height: 350px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+.preview-container img {
+    width: 100%;
+}
+
+.preview-container-sig {
+    width: 300px;
+    height: 180px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+.preview-container-sig img {
+    width: 100%;
+}
+
+.img-responsive {
+    border-radius: 5px;
+    border: 1px solid #EEE;
+}
+
+/* ===== Typography Improvements ===== */
+
+/* Font Family Optimization */
+body, html {
+    font-family: 'Kanit', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Heading Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Kanit', sans-serif;
+    letter-spacing: -0.5px;
+    line-height: 1.4;
+}
+
+/* Paragraph Spacing and Readability */
+p {
+    line-height: 1.7;
+    letter-spacing: 0.3px;
+    margin-bottom: 1.25rem;
+}
+
+/* Table Typography */
+table, td, th {
+    font-family: 'Kanit', sans-serif;
+}
+
+th {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+td {
+    letter-spacing: 0.2px;
+}
+
+/* Navigation Text Clarity */
+.navbar, .nav, .navbar-nav {
+    font-family: 'Kanit', sans-serif;
+}
+
+.navbar-brand, .nav-link {
+    letter-spacing: 0.2px;
+}
+
+/* Button Typography */
+.btn, button {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Form Elements */
+input, textarea, select, .form-control {
+    font-family: 'Kanit', sans-serif;
+    letter-spacing: 0.2px;
+}
+
+label, .form-label {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+/* DataTable Typography */
+.dataTables_wrapper {
+    font-family: 'Kanit', sans-serif;
+}
+
+.dataTables_wrapper .dt-button {
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+/* Link Enhancement */
+a, .link {
+    font-family: 'Kanit', sans-serif;
+    letter-spacing: 0.2px;
+    transition: opacity 0.3s ease;
+}
+
+/* Small Text */
+small, .small {
+    font-size: 0.875rem;
+    letter-spacing: 0.3px;
+}
+
+/* Code Typography */
+code, pre {
+    font-family: "Monaco", "Menlo", "Ubuntu Mono", "Courier New", monospace;
+    letter-spacing: 0px;
+}
+
+/* Badge Typography */
+.badge, .label {
+    font-family: 'Kanit', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}

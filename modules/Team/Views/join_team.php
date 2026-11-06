@@ -1,0 +1,151 @@
+<?php $this->extend('template/layout') ?>
+
+<?= $this->section('content') ?>
+<div class="content">
+
+    <!-- Start Content-->
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="header-title">ค้นหาและเข้าร่วมทีม</h4>
+                        <p class="sub-header">
+                            คุณสามารถค้นหาทีมที่ต้องการเข้าร่วมและส่งคำขอได้ที่นี่
+                        </p>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="search-team-input" placeholder="พิมพ์ชื่อทีมที่ต้องการค้นหา...">
+                                    <button class="btn btn-primary" type="button" id="btn-search-team">
+                                        <i class="fas fa-search"></i> ค้นหา
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="search-results" class="row">
+                            <!-- Results will be displayed here -->
+                            <div class="col-12 text-center text-muted mt-5">
+                                <p>พิมพ์ชื่อทีมและกดค้นหา</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnSearch = document.getElementById('btn-search-team');
+        const inputSearch = document.getElementById('search-team-input');
+        const resultsDiv = document.getElementById('search-results');
+
+        function searchTeams() {
+            const keyword = inputSearch.value.trim();
+            if(!keyword) return;
+
+            resultsDiv.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+
+            fetch('<?= base_url("team/api/search") ?>?keyword=' + encodeURIComponent(keyword))
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if(data.length === 0) {
+                        resultsDiv.innerHTML = '<div class="col-12 text-center text-muted"><p>ไม่พบทีมที่ค้นหา</p></div>';
+                        return;
+                    }
+
+                    data.forEach(team => {
+                        const logoUrl = team.logo ? '<?= base_url() ?>/' + team.logo : '<?= base_url("public/img/no-image.png") ?>';
+                        const html = `
+                            <div class="col-md-4 mb-3">
+                                <div class="card border">
+                                    <div class="card-body text-center">
+                                        <img src="${logoUrl}" alt="${team.name}" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                                        <h5 class="card-title">${team.name}</h5>
+                                        <button class="btn btn-success btn-sm btn-join" data-id="${team.id}">ขอเข้าร่วมทีม</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resultsDiv.insertAdjacentHTML('beforeend', html);
+                    });
+
+                    document.querySelectorAll('.btn-join').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const teamId = this.getAttribute('data-id');
+                            joinTeam(teamId);
+                        });
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    resultsDiv.innerHTML = '<div class="col-12 text-center text-danger"><p>เกิดข้อผิดพลาด</p></div>';
+                });
+        }
+
+        function joinTeam(teamId) {
+            Swal.fire({
+                title: 'ยืนยันการขอเข้าร่วม?',
+                text: "คุณต้องการส่งคำขอเข้าร่วมทีมนี้ใช่หรือไม่",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, ส่งคำขอ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('<?= base_url("team/api/join-request") ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ team_id: teamId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire('สำเร็จ', data.message, 'success');
+                        } else {
+                            Swal.fire('แจ้งเตือน', data.message, 'warning');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+                    });
+                }
+            });
+        }
+
+        btnSearch.addEventListener('click', searchTeams);
+        inputSearch.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') searchTeams();
+        });
+
+        // Check for keyword in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyword = urlParams.get('keyword');
+        if (keyword) {
+            inputSearch.value = keyword;
+            searchTeams();
+        }
+
+        <?php if (session()->getFlashdata('error')) : ?>
+            Swal.fire({
+                icon: 'info',
+                title: 'แจ้งเตือน',
+                text: '<?= session()->getFlashdata('error') ?>',
+                confirmButtonText: 'ตกลง'
+            });
+        <?php endif; ?>
+    });
+</script>
+<?= $this->endSection() ?>
