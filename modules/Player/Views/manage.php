@@ -140,6 +140,10 @@
                                 <div class="col-12">
                                     <small class="text-muted"><i class="fas fa-info-circle me-1"></i><?= lang('Common.id_card_image_hint') ?></small>
                                 </div>
+                                <div class="col-12">
+                                    <small class="text-primary"><i class="fas fa-magic me-1"></i>แนบรูปหน้าบัตรประชาชน ระบบจะอ่านเลขบัตร ชื่อ วันเกิด และเพศ มากรอกให้</small>
+                                    <div id="idCardOcrStatus" class="small mt-1" style="display:none;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -433,6 +437,7 @@
 
 <?php $this->section('css'); ?>
 <style>
+    .form-control.ocr-filled { background-color: #fff8db !important; box-shadow: 0 0 0 2px #facc15; }
     fieldset {
         background-color: #f8f9fa;
     }
@@ -497,7 +502,94 @@
             }
         };
         reader.readAsDataURL(file);
+        runIdCardOcr(file);
     });
+
+    // --- อ่านข้อมูลจากรูปบัตรประชาชน (OCR) แล้วเสนอให้กรอกฟอร์ม ---
+    function runIdCardOcr(file) {
+        const status = document.getElementById('idCardOcrStatus');
+        status.style.display = '';
+        status.className = 'small mt-1 text-muted';
+        status.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>กำลังอ่านข้อมูลจากบัตร...';
+
+        const fd = new FormData();
+        fd.append('image', file);
+        fetch('<?= base_url('player/ocr-id-card') ?>', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) {
+                    status.className = 'small mt-1 text-warning';
+                    status.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>' + (res.message || 'อ่านข้อมูลจากรูปไม่ได้ ลองถ่ายให้ชัดและตรงขึ้น หรือกรอกเอง');
+                    return;
+                }
+                status.style.display = 'none';
+                offerIdCardFill(res.fields);
+            })
+            .catch(() => {
+                status.className = 'small mt-1 text-danger';
+                status.innerHTML = '<i class="fas fa-times-circle me-1"></i>อ่านข้อมูลจากบัตรไม่สำเร็จ กรุณากรอกเอง';
+            });
+    }
+
+    function offerIdCardFill(f) {
+        const esc = s => $('<div>').text(s || '').html();
+        const sexText = f.sex === 'M' ? 'ชาย' : (f.sex === 'W' ? 'หญิง' : '');
+        const rows = [
+            ['เลขบัตรประชาชน', f.id_card],
+            ['คำนำหน้า', f.prefix],
+            ['ชื่อ', f.first_name],
+            ['นามสกุล', f.last_name],
+            ['ชื่อภาษาอังกฤษ', [f.first_name_en, f.last_name_en].filter(Boolean).join(' ')],
+            ['วันเกิด', f.birth_date],
+            ['เพศ', sexText],
+        ].filter(r => r[1]);
+
+        const html = '<p class="small text-muted mb-2">ระบบอ่านจากรูปได้ดังนี้ ตรวจสอบก่อนกรอก (OCR อาจอ่านผิดบางตัวอักษร)</p>'
+            + '<table class="table table-sm text-start small mb-0">'
+            + rows.map(r => '<tr><th class="text-muted fw-normal" style="width:40%">' + r[0] + '</th><td class="fw-semibold">' + esc(r[1]) + '</td></tr>').join('')
+            + '</table>';
+
+        Swal.fire({
+            title: 'อ่านข้อมูลจากบัตรแล้ว',
+            html: html,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'กรอกลงฟอร์ม',
+            cancelButtonText: 'ไม่ใช้',
+        }).then(result => {
+            if (!result.isConfirmed) return;
+            const filled = [];
+            const set = (sel, val) => {
+                if (!val) return;
+                $(sel).val(val).addClass('ocr-filled');
+                filled.push(sel);
+            };
+            if (f.id_card) {
+                if ($('#nation').val() !== 'THAI') {
+                    $('#nation').val('THAI').trigger('change');
+                }
+                set('#id_card', f.id_card);
+                $('#id_card').trigger('input');
+            }
+            set('#first_name', f.first_name);
+            set('#last_name', f.last_name);
+            if (f.birth_date) {
+                const bd = $('#birth_date');
+                if (typeof bd.datepicker === 'function') { bd.datepicker('update', f.birth_date); }
+                set('#birth_date', f.birth_date);
+                bd.trigger('change');
+            }
+            if (f.sex === 'M') { $('#sex_m').prop('checked', true).trigger('change'); }
+            if (f.sex === 'W') { $('#sex_w').prop('checked', true).trigger('change'); }
+
+            const status = document.getElementById('idCardOcrStatus');
+            status.style.display = '';
+            status.className = 'small mt-1 text-success';
+            status.innerHTML = '<i class="fas fa-check-circle me-1"></i>กรอกข้อมูลจากบัตรแล้ว ช่องที่ไฮไลต์สีเหลืองคือค่าที่ได้จาก OCR กรุณาตรวจทานก่อนบันทึก';
+            $(filled.join(',')).one('input change', function () { $(this).removeClass('ocr-filled'); });
+            if (filled.length) { $(filled[0])[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        });
+    }
 
     function viewIdCardFull(src) {
         Swal.fire({

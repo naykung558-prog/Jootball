@@ -233,6 +233,35 @@ public function check_id_card()
     return $this->response->setJSON(['exists' => false]);
 }
 
+/**
+ * อ่านข้อมูลจากรูปบัตรประชาชน (OCR) เพื่อกรอกฟอร์มนักเตะอัตโนมัติ
+ * POST multipart: image (jpg/png ≤ 5MB) → { success, fields:{id_card, first_name, last_name, birth_date, sex, ...} }
+ * ไม่บันทึกรูปไว้ในเซิร์ฟเวอร์: รูปจะถูกเก็บตอนกดบันทึกฟอร์มตามปกติ
+ */
+public function ocr_id_card()
+{
+    $file = $this->request->getFile('image');
+    if (!$file || !$file->isValid()) {
+        return $this->response->setStatusCode(400)->setJSON(['success' => false, 'message' => 'ไม่พบไฟล์รูป']);
+    }
+    if (!in_array($file->getMimeType(), ['image/jpeg', 'image/png'], true) || $file->getSize() > 5 * 1024 * 1024) {
+        return $this->response->setStatusCode(400)->setJSON(['success' => false, 'message' => 'รองรับเฉพาะ JPG/PNG ไม่เกิน 5MB']);
+    }
+
+    try {
+        $result = (new \App\Libraries\IdCardOcr())->read($file->getTempName());
+    } catch (\Throwable $e) {
+        log_message('error', 'ID card OCR failed: ' . $e->getMessage());
+        return $this->response->setStatusCode(500)->setJSON(['success' => false, 'message' => 'อ่านรูปบัตรไม่สำเร็จ']);
+    }
+
+    return $this->response->setJSON([
+        'success' => !empty($result['found']),
+        'fields'  => $result['fields'],
+        'found'   => $result['found'],
+    ]);
+}
+
 public function save_player()
 {
     $input = $this->request->getPost();

@@ -388,6 +388,7 @@ $routes->group('player', ['namespace' => '\Modules\Player\Controllers', 'filter'
     $routes->post('get-players', 'Player::ajax_players');
     $routes->post('save-player', 'Player::save_player');
     $routes->get('check-id-card', 'Player::check_id_card');
+    $routes->post('ocr-id-card', 'Player::ocr_id_card');
     $routes->post('delete', 'Player::delete_player');
 
     // Search and assign players (multi-team support)
