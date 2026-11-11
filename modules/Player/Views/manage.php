@@ -130,6 +130,13 @@
                                     </label>
                                     <input type="file" id="idCardFileInput" accept="image/jpeg,image/png" style="display:none;">
                                 </div>
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-outline-success rounded-pill btn-sm" id="btnIdCardCamera">
+                                        <i class="fas fa-camera me-1"></i>ถ่ายรูปบัตร
+                                    </button>
+                                    <!-- มือถือ: เปิดกล้องหลังของเครื่องโดยตรง -->
+                                    <input type="file" id="idCardCaptureInput" accept="image/*" capture="environment" style="display:none;">
+                                </div>
                                 <?php if (!empty($player['id_card_image'])): ?>
                                 <div class="col-auto">
                                     <button type="button" class="btn btn-outline-danger rounded-pill btn-sm" id="btnDeleteIdCard">
@@ -432,12 +439,49 @@
         </div>
     </div>
 </div>
+
+<!-- ถ่ายรูปบัตรประชาชนด้วยกล้อง (คอมพิวเตอร์) -->
+<div class="modal fade" id="idCardCameraModal" tabindex="-1" aria-labelledby="idCardCameraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="idCardCameraLabel"><i class="fas fa-camera me-2 text-success"></i>ถ่ายรูปบัตรประชาชน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <p class="small text-muted mb-2">วางบัตรให้อยู่ในกรอบ ให้แสงสว่างพอ และไม่มีแสงสะท้อนบนตัวหนังสือ</p>
+                <div id="idCardVideoWrap" class="id-cam-wrap">
+                    <video id="idCardVideo" autoplay playsinline muted></video>
+                    <div class="id-cam-frame"></div>
+                </div>
+                <img id="idCardShot" class="w-100 rounded-3" style="display:none;" alt="รูปบัตรที่ถ่าย">
+                <canvas id="idCardCanvas" class="d-none"></canvas>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal"><?= lang('Common.cancel') ?></button>
+                <button type="button" class="btn btn-outline-secondary rounded-pill" id="btnIdCardRetake" style="display:none;"><i class="fas fa-redo me-1"></i>ถ่ายใหม่</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" id="btnIdCardSnap"><i class="fas fa-camera me-1"></i>ถ่าย</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" id="btnIdCardUseShot" style="display:none;"><i class="fas fa-check me-1"></i>ใช้รูปนี้</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?php $this->endSection(); ?>
 
 
-<?php $this->section('css'); ?>
+<?php /* layout แสดงเฉพาะ section 'style' (section 'css' ด้านล่างไม่ถูกแสดง) */ $this->section('style'); ?>
 <style>
     .form-control.ocr-filled { background-color: #fff8db !important; box-shadow: 0 0 0 2px #facc15; }
+    .id-cam-wrap { position: relative; background: #111; border-radius: 12px; overflow: hidden; }
+    .id-cam-wrap video { display: block; width: 100%; height: auto; }
+    /* กรอบขนาดบัตรประชาชน (85.6 x 54 มม.) ช่วยให้วางบัตรตรงและเต็มภาพ */
+    .id-cam-frame { position: absolute; left: 50%; top: 50%; width: 78%; aspect-ratio: 85.6 / 54; transform: translate(-50%, -50%);
+        border: 3px dashed rgba(255,255,255,.85); border-radius: 14px; box-shadow: 0 0 0 9999px rgba(0,0,0,.35); pointer-events: none; }
+</style>
+<?php $this->endSection(); ?>
+
+<?php $this->section('css'); ?>
+<style>
     fieldset {
         background-color: #f8f9fa;
     }
@@ -469,18 +513,23 @@
     // --- ID Card Image Upload ---
     document.getElementById('idCardFileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
-        if (!file) return;
+        if (file && !handleIdCardFile(file)) this.value = '';
+    });
+    document.getElementById('idCardCaptureInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && !handleIdCardFile(file)) this.value = '';
+    });
 
+    /** รับไฟล์รูปบัตร (จากการอัปโหลดหรือถ่ายรูป): แสดงตัวอย่าง เก็บลงฟอร์ม และส่งไปอ่าน OCR */
+    function handleIdCardFile(file) {
         const allowedTypes = ['image/jpeg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
             Swal.fire({ icon: 'error', title: langErrorOccurred, text: langInvalidFileType });
-            this.value = '';
-            return;
+            return false;
         }
         if (file.size > 5 * 1024 * 1024) {
             Swal.fire({ icon: 'error', title: langErrorOccurred, text: langFileTooLarge });
-            this.value = '';
-            return;
+            return false;
         }
 
         const reader = new FileReader();
@@ -488,22 +537,104 @@
             document.getElementById('id_card_image_base64').value = ev.target.result;
             document.getElementById('idCardPreview').src = ev.target.result;
             document.getElementById('idCardPreviewWrapper').style.display = '';
+            const placeholder = document.getElementById('idCardPlaceholder');
+            if (placeholder) placeholder.style.display = 'none';
             document.getElementById('delete_id_card_image').value = '0';
 
             // Add delete button if not exists
             if (!document.getElementById('btnDeleteIdCard')) {
+                const col = document.createElement('div');
+                col.className = 'col-auto';
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'btn btn-outline-danger btn-sm mt-1';
+                btn.className = 'btn btn-outline-danger rounded-pill btn-sm';
                 btn.id = 'btnDeleteIdCard';
                 btn.innerHTML = '<i class="fas fa-trash me-1"></i>' + langDeleteIdCardImage;
                 btn.onclick = deleteIdCardImage;
-                document.getElementById('idCardFileInput').parentNode.querySelector('small').after(document.createElement('br'), btn);
+                col.appendChild(btn);
+                document.getElementById('btnIdCardCamera').parentNode.after(col);
             }
         };
         reader.readAsDataURL(file);
         runIdCardOcr(file);
+        return true;
+    }
+
+    // --- ถ่ายรูปบัตรด้วยกล้อง ---
+    // มือถือ/แท็บเล็ต: ใช้แอปกล้องของเครื่อง (โฟกัสและความละเอียดดีกว่า)
+    // คอมพิวเตอร์: เปิดกล้องในหน้าเว็บพร้อมกรอบวางบัตร
+    let idCardStream = null;
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+    document.getElementById('btnIdCardCamera').addEventListener('click', function () {
+        const canUseWebcam = navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.isSecureContext;
+        if (isTouchDevice || !canUseWebcam) {
+            document.getElementById('idCardCaptureInput').click();
+            return;
+        }
+        openIdCardCamera();
     });
+
+    function openIdCardCamera() {
+        const modalEl = document.getElementById('idCardCameraModal');
+        const video = document.getElementById('idCardVideo');
+        setCameraStep('live');
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false
+        }).then(stream => {
+            idCardStream = stream;
+            video.srcObject = stream;
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }).catch(err => {
+            const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+            Swal.fire({
+                icon: 'warning',
+                title: 'เปิดกล้องไม่ได้',
+                text: denied ? 'กรุณาอนุญาตให้เว็บใช้กล้องในเบราว์เซอร์ แล้วลองใหม่' : 'ไม่พบกล้องในเครื่องนี้ ใช้ปุ่มอัปโหลดรูปบัตรแทนได้',
+            });
+        });
+    }
+
+    function stopIdCardCamera() {
+        if (idCardStream) {
+            idCardStream.getTracks().forEach(t => t.stop());
+            idCardStream = null;
+        }
+        document.getElementById('idCardVideo').srcObject = null;
+    }
+
+    function setCameraStep(step) {
+        const live = step === 'live';
+        document.getElementById('idCardVideoWrap').style.display = live ? '' : 'none';
+        document.getElementById('idCardShot').style.display = live ? 'none' : '';
+        document.getElementById('btnIdCardSnap').style.display = live ? '' : 'none';
+        document.getElementById('btnIdCardRetake').style.display = live ? 'none' : '';
+        document.getElementById('btnIdCardUseShot').style.display = live ? 'none' : '';
+    }
+
+    document.getElementById('btnIdCardSnap').addEventListener('click', function () {
+        const video = document.getElementById('idCardVideo');
+        if (!video.videoWidth) return;
+        const canvas = document.getElementById('idCardCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        document.getElementById('idCardShot').src = canvas.toDataURL('image/jpeg', 0.92);
+        setCameraStep('shot');
+    });
+
+    document.getElementById('btnIdCardRetake').addEventListener('click', () => setCameraStep('live'));
+
+    document.getElementById('btnIdCardUseShot').addEventListener('click', function () {
+        document.getElementById('idCardCanvas').toBlob(blob => {
+            const file = new File([blob], 'id-card-camera.jpg', { type: 'image/jpeg' });
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('idCardCameraModal')).hide();
+            handleIdCardFile(file);
+        }, 'image/jpeg', 0.92);
+    });
+
+    document.getElementById('idCardCameraModal').addEventListener('hidden.bs.modal', stopIdCardCamera);
 
     // --- อ่านข้อมูลจากรูปบัตรประชาชน (OCR) แล้วเสนอให้กรอกฟอร์ม ---
     function runIdCardOcr(file) {
