@@ -471,7 +471,6 @@
 
 <?php /* layout แสดงเฉพาะ section 'style' (section 'css' ด้านล่างไม่ถูกแสดง) */ $this->section('style'); ?>
 <style>
-    .form-control.ocr-filled { background-color: #fff8db !important; box-shadow: 0 0 0 2px #facc15; }
     .id-cam-wrap { position: relative; background: #111; border-radius: 12px; overflow: hidden; }
     .id-cam-wrap video { display: block; width: 100%; height: auto; }
     /* กรอบขนาดบัตรประชาชน (85.6 x 54 มม.) ช่วยให้วางบัตรตรงและเต็มภาพ */
@@ -692,7 +691,7 @@
             const filled = [];
             const set = (sel, val) => {
                 if (!val) return;
-                $(sel).val(val).addClass('ocr-filled');
+                $(sel).val(val);
                 filled.push(sel);
             };
             if (f.id_card) {
@@ -716,8 +715,7 @@
             const status = document.getElementById('idCardOcrStatus');
             status.style.display = '';
             status.className = 'small mt-1 text-success';
-            status.innerHTML = '<i class="fas fa-check-circle me-1"></i>กรอกข้อมูลจากบัตรแล้ว ช่องที่ไฮไลต์สีเหลืองคือค่าที่ได้จาก OCR กรุณาตรวจทานก่อนบันทึก';
-            $(filled.join(',')).one('input change', function () { $(this).removeClass('ocr-filled'); });
+            status.innerHTML = '<i class="fas fa-check-circle me-1"></i>กรอกข้อมูลจากบัตรแล้ว กรุณาตรวจทานก่อนบันทึก';
             if (filled.length) { $(filled[0])[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         });
     }
